@@ -11,25 +11,45 @@
 
     <style>
       body {
-        background-color: #1e303c;
+        background: linear-gradient(135deg, #e0eafc, #cfdef3);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+      }
+
+      .chat-box {
+        max-width: 650px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 20px;
       }
 
       #message_content {
         max-height: 500px;
         overflow-y: auto;
         padding: 15px;
-        background-color: #f0f2f5;
+        background-color: #eef1f5;
         border-radius: 10px;
         margin-bottom: 15px;
       }
 
       .message {
         padding: 10px 15px;
-        border-radius: 20px;
-        max-width: 70%;
-        margin-bottom: 10px;
+        border-radius: 18px;
+        max-width: 75%;
+        margin-bottom: 4px;
         word-wrap: break-word;
+        font-size: 0.95rem;
       }
+
+      .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 
       .sent {
         background-color: #dcf8c6;
@@ -41,11 +61,18 @@
         margin-right: auto;
       }
 
-      .chat-box {
-        max-width: 600px;
-        margin: auto;
-        margin-top: 30px;
+      .timestamp {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-bottom: 10px;
       }
+      .signout-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
     </style>
   </head>
 
@@ -62,7 +89,9 @@
         />
         <button class="btn btn-success" id="send">Send</button>
       </div>
-      <button class="btn btn-danger w-100" id="signOut">Sign Out</button>
+      <button class="btn btn-danger signout-btn" id="signOut">
+  Sign Out
+</button>
     </div>
 
     <script type="module">
@@ -115,10 +144,10 @@
       document.getElementById("signOut").addEventListener("click", () => {
         signOut(auth)
           .then(() => {
-            //console.log("User signed out.");
+            console.log("User signed out.");
           })
           .catch((error) => {
-            //console.error("Sign out error:", error);
+            console.error("Sign out error:", error);
           });
       });
 
@@ -140,7 +169,19 @@
 
         messageInput.value = "";
       });
-      function listenForMessages() {
+
+      function formatTime(ms) {
+        const date = new Date(ms);
+        return date.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      const defaultAvatar =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlOWVjZWYiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjM4IiByPSIxOCIgc3Ryb2tlPSIjYmJiIiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTIwIDg1YzAtMTcgMTUtMjUgMzAtMjVzMzAgOCAzMCAyNSIgc3Ryb2tlPSIjYmJiIiBmaWxsPSIjZGRkIi8+PC9zdmc+";
+      
+  function listenForMessages() {
         const chatRef = ref(database, "chats/");
         const messageContainer = document.getElementById("message_content");
 
@@ -156,17 +197,29 @@
               const isSender = msg.senderId === currentUser.uid;
               const alignmentClass = isSender ? "sent" : "received";
               const textAlign = isSender ? "text-end" : "text-start";
+              const avatar =
+  typeof msg.picture === "string" && msg.picture.trim() !== ""
+    ? msg.picture
+    : defaultAvatar;
 
-              const messageHTML = `
-                <div class="d-flex flex-column ${textAlign}">
-                  <div class="message ${alignmentClass}">
-                    <strong>${msg.senderName}</strong><br />
-                    ${msg.message}
-                  </div>
-                </div>
-              `;
+const messageHTML = `
+  <div class="d-flex ${isSender ? "justify-content-end" : "justify-content-start"} mb-2">
+    ${!isSender ? `<img src="${avatar}" class="avatar me-2" />` : ""}
+    <div class="d-flex flex-column ${textAlign}">
+      <div class="message ${alignmentClass}">
+        <strong>${msg.senderName}</strong><br />
+        ${msg.message}
+      </div>
+      <div class="timestamp ${textAlign}">
+        ${formatTime(msg.timestamp)}
+      </div>
+    </div>
+    ${isSender ? `<img src="${avatar}" class="avatar ms-2" />` : ""}
+  </div>
+`;
               messageContainer.innerHTML += messageHTML;
             });
+
             messageContainer.scrollTop = messageContainer.scrollHeight;
           } else {
             messageContainer.innerHTML =
@@ -177,6 +230,3 @@
     </script>
   </body>
 </html>
-
-
-
