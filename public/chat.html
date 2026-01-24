@@ -132,7 +132,7 @@
             <div class="p-3 bg-light d-flex align-items-center rounded shadow-sm">
               <img src="${user.photoURL}" alt="User" width="40" class="rounded-circle me-2" />
               <h5 class="mb-0">
-  Welcome, ${user.displayName || user.email}
+  Welcome, ${user.displayName || User}
 </h5>
 
             </div>
@@ -165,7 +165,7 @@
         set(newMsgRef, {
           message: message,
           senderId: currentUser.uid,
-          senderName: currentUser.displayName || currentUser.email,
+          senderName: currentUser.displayName || User,
           picture: currentUser.photoURL,
           timestamp: Date.now(),
         });
